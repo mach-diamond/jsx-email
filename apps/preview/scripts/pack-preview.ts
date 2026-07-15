@@ -46,6 +46,7 @@ const sourceFiles = [
   'components/logo-wordmark.tsx',
   'components/lab-controls/switch-control.tsx',
   'components/lab-controls/send-email-section.tsx',
+  'components/lab-controls/variables-panel.tsx',
   'components/lab-controls/lab-controls-panel.tsx',
   'components/file-system/file-tree.tsx',
   'components/file-system/file-system-panel.tsx',
@@ -71,7 +72,9 @@ import { createRoot } from 'react-dom/client';
 import type { ShikiTransformer } from 'shiki';
 import {
   Check,
+  Code,
   Copy,
+  Database,
   Download,
   FolderMinus,
   FolderPlus,

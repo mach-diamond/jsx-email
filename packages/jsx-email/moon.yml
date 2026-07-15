@@ -35,6 +35,12 @@ tasks:
     inputs:
       - src
       - package.json
+    # Declare dist as an output so a cache hit restores the compiled tree.
+    # Without this, a cached compile skips tsc *and* leaves dist/ missing
+    # (clean.dist having just removed it), so copy.package's `cp package.json
+    # dist` creates dist as a file and copy.preview fails ("Not a directory").
+    outputs:
+      - dist
     options:
       mergeArgs: replace
       runDepsInParallel: false

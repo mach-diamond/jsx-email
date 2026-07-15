@@ -17,6 +17,7 @@ import {
 import { gatherTemplates } from '../helpers/templates';
 const defaultLabState = (): LabState => ({
   colorScheme: false,
+  dataPreset: '',
   invertColors: false,
   preset: previewPresets[0].name,
   sendEmail: '',

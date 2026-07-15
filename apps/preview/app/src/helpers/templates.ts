@@ -54,6 +54,9 @@ export function gatherTemplates() {
         id: `emails/${routePath}`,
         path: routePath,
         plain: file.plain,
+        presets: (
+          file.presets ?? [{ html: file.html, name: 'Default', plain: file.plain, props: {} }]
+        ).map((preset) => ({ ...preset, html: normalizePreviewAssetUrls(preset.html) })),
         source: normalizePreviewAssetUrls(file.source),
         sourceFile: file.sourceFile,
         sourcePath: file.sourcePath || file.sourceFile,

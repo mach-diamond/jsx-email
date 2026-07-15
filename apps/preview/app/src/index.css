@@ -970,3 +970,85 @@ html.is-zooming-out #tool-panel,
 html.is-zooming-out #tool-panel * {
   cursor: auto !important;
 }
+
+/* Sample-data + variables Lab Controls sections */
+.tool-note {
+  color: var(--text-subtle);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.tool-note code {
+  background: var(--surface-muted);
+  border-radius: 4px;
+  font-size: 11px;
+  padding: 1px 5px;
+}
+
+.data-preset-select {
+  appearance: none;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-strong);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 8px 10px;
+  width: 100%;
+}
+
+.variables-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.variable-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.variable-key {
+  color: var(--text-subtle);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+}
+
+.variable-value {
+  color: var(--text-strong);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.variable-value.is-number {
+  font-variant-numeric: tabular-nums;
+}
+
+.variable-value.is-special {
+  align-self: flex-start;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-subtle);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  padding: 1px 8px;
+  text-transform: lowercase;
+}
+
+.variable-json {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 11px;
+  margin: 0;
+  max-height: 140px;
+  overflow: auto;
+  padding: 8px;
+  white-space: pre-wrap;
+}

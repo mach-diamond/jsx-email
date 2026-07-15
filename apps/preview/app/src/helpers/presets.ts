@@ -2,6 +2,7 @@ import type { PreviewPreset } from '../types/templates';
 
 export const previewPresets: PreviewPreset[] = [
   { label: '100%', name: 'Full Width', width: null },
+  { all: true, label: 'compare', name: 'All Sizes', width: null },
   { label: '430px', name: 'iPhone 15 Pro Max', width: 430 },
   { label: '393px', name: 'iPhone 15 Pro', width: 393 },
   { label: '375px', name: 'iPhone 13 mini', width: 375 },

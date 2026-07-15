@@ -56,11 +56,19 @@ interface BuildOptions {
   sourceFile: string;
 }
 
+export interface PresetResult {
+  html: string | null;
+  name: string;
+  plain: string | null;
+  props: Record<string, unknown>;
+}
+
 export interface BuildResult {
   compiledPath: string;
   html: string | null;
   metaPath?: string;
   plainText: string | null;
+  presets?: PresetResult[];
   sourceFile: string;
   templateName: string | null;
   writePathBase: string;
@@ -148,7 +156,6 @@ export const build = async (options: BuildOptions): Promise<BuildResult> => {
   const renderProps = usePreviewProps ? template.previewProps || {} : JSON.parse(props);
   const fileExt = extname(path);
   const templateName = basename(path, fileExt).replace(/-[^-]{8}$/, '');
-  const component = componentExport(renderProps);
   const baseDir = dirname(path);
   const relativeOutputDir = outputBasePath
     ? getRelativeOutputDir({ baseDir, outputBasePath })
@@ -158,36 +165,46 @@ export const build = async (options: BuildOptions): Promise<BuildResult> => {
       ? join(out!, relativeOutputDir, templateName)
       : join(out!, templateName)
     : join(out!, templateName);
-  // const writePath = outputBasePath
-  //   ? join(out!, baseDir.replace(outputBasePath, ''), templateName + extension)
-  //   : join(out!, templateName + extension);
-  let plainText: string | null = null;
 
   await mkdir(dirname(writePath), { recursive: true });
 
-  if (plain) {
-    plainText = await render(component, { plainText: plain });
-    if (writeToFile) await writeFile(`${writePath}.txt`, plainText, 'utf8');
-    if (!html)
+  // Render once per named sample-data preset. `previewPresets` is an optional
+  // array of `{ name, props }` exported by the template; without it we render
+  // the single `previewProps` (or CLI `--props`) as the "Default" preset.
+  const presetList =
+    usePreviewProps && Array.isArray(template.previewPresets) && template.previewPresets.length > 0
+      ? (template.previewPresets as { name: string; props?: Record<string, unknown> }[])
+      : [{ name: 'Default', props: renderProps }];
+
+  // Presets render independently, so fan them out. Promise.all preserves order,
+  // so presets[0] stays the first preset (used as the default html/plain below).
+  const presets: PresetResult[] = await Promise.all(
+    presetList.map(async (preset) => {
+      const presetProps = preset.props ?? {};
+      const component = componentExport(presetProps);
+      const presetPlain = plain ? await render(component, { plainText: plain }) : null;
+      const presetHtml = html ? await render(component, argv as any) : null;
       return {
-        compiledPath,
-        html: null,
-        plainText,
-        sourceFile,
-        templateName: template.templateName,
-        writePathBase: writePath
+        html: presetHtml,
+        name: preset.name,
+        plain: presetPlain,
+        props: presetProps
       };
+    })
+  );
+
+  const first = presets[0];
+  if (writeToFile) {
+    if (first.plain != null) await writeFile(`${writePath}.txt`, first.plain, 'utf8');
+    if (first.html != null) await writeFile(`${writePath}.html`, first.html, 'utf8');
   }
-
-  const htmlText = await render(component, argv as any);
-
-  if (writeToFile) await writeFile(`${writePath}.html`, htmlText, 'utf8');
 
   return {
     compiledPath,
-    html: htmlText,
-    metaPath: compiledPath.replace(/(\.js)$/, '.meta.json'),
-    plainText,
+    html: first.html,
+    metaPath: html ? compiledPath.replace(/(\.js)$/, '.meta.json') : undefined,
+    plainText: first.plain,
+    presets,
     sourceFile,
     templateName: template.templateName,
     writePathBase: writePath

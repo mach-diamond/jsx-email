@@ -1,4 +1,12 @@
-import { HalfMoon, NavArrowLeft, NavArrowRight, Send, SmartphoneDevice } from 'iconoir-react';
+import {
+  Code,
+  Database,
+  HalfMoon,
+  NavArrowLeft,
+  NavArrowRight,
+  Send,
+  SmartphoneDevice
+} from 'iconoir-react';
 import { useEffect } from 'react';
 import tippy from 'tippy.js';
 
@@ -10,6 +18,7 @@ import type { TemplateData } from '../../types/templates';
 import { Button } from '../ui/button';
 import { SendEmailSection } from './send-email-section';
 import { SwitchControl } from './switch-control';
+import { VariablesPanel } from './variables-panel';
 
 interface LabControlsPanelProps {
   cardId: string;
@@ -93,6 +102,8 @@ export function LabControlsPanel({ cardId, template }: LabControlsPanelProps) {
   );
 
   function ExpandedPanel({ cardId, template }: LabControlsPanelProps) {
+    const presets = template.presets ?? [];
+    const activeData = presets.find((preset) => preset.name === lab.dataPreset) ?? presets[0];
     return (
       <div className="min-h-0 w-80 flex-1 overflow-auto">
         <section className="tool-section">
@@ -126,7 +137,7 @@ export function LabControlsPanel({ cardId, template }: LabControlsPanelProps) {
         <section className="tool-section">
           <div className="tool-title">
             <SmartphoneDevice className="size-[18px]" />
-            Presets
+            Aspect Ratios
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {previewPresets.map((preset) => (
@@ -148,10 +159,41 @@ export function LabControlsPanel({ cardId, template }: LabControlsPanelProps) {
         </section>
         <section className="tool-section">
           <div className="tool-title">
+            <Database className="size-[18px]" />
+            Sample Data
+          </div>
+          {presets.length > 1 ? (
+            <select
+              aria-label="Sample data preset"
+              className="data-preset-select"
+              onChange={(event) => updateLab(cardId, { dataPreset: event.target.value })}
+              value={activeData?.name ?? ''}
+            >
+              {presets.map((preset) => (
+                <option key={preset.name} value={preset.name}>
+                  {preset.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p className="tool-note">
+              Add a <code>previewPresets</code> export to compare multiple sample datasets.
+            </p>
+          )}
+        </section>
+        <section className="tool-section">
+          <div className="tool-title">
+            <Code className="size-[18px]" />
+            Variables
+          </div>
+          <VariablesPanel props={activeData?.props ?? {}} />
+        </section>
+        <section className="tool-section">
+          <div className="tool-title">
             <Send className="size-[18px]" />
             Send Email
           </div>
-          <SendEmailSection cardId={cardId} html={template.html} />
+          <SendEmailSection cardId={cardId} html={activeData?.html ?? template.html} />
         </section>
       </div>
     );
@@ -163,7 +205,9 @@ function CollapsedIcons() {
     <div className="tool-collapsed-icons min-h-0 flex-1 overflow-hidden">
       {[
         ['Color mode', HalfMoon, 'is-color'],
-        ['Presets', SmartphoneDevice, 'is-presets'],
+        ['Aspect Ratios', SmartphoneDevice, 'is-presets'],
+        ['Sample data', Database, 'is-data'],
+        ['Variables', Code, 'is-vars'],
         ['Send email', Send, 'is-send']
       ].map(([label, Icon, className]) => (
         <section className={cn('tool-collapsed-section', className)} key={label as string}>

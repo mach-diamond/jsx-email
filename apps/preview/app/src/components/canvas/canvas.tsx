@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 
 import {
   canvasOrigin,
@@ -63,6 +63,24 @@ export function Canvas() {
     else cardNodes.current.delete(id);
   }
 
+  // Group open cards by their category folder so each folder is its own row.
+  const folderGroups = useMemo(() => {
+    const groups: Array<{ cards: typeof cards; folder: string }> = [];
+    for (const card of cards) {
+      const template = templates.find((item) => item.id === card.templateId);
+      if (template) {
+        const folder = template.path.includes('/') ? template.path.split('/')[0] : 'Templates';
+        let group = groups.find((item) => item.folder === folder);
+        if (!group) {
+          group = { cards: [], folder };
+          groups.push(group);
+        }
+        group.cards.push(card);
+      }
+    }
+    return groups;
+  }, [cards, templates]);
+
   return (
     <>
       {isZoomKeyDown && (
@@ -103,20 +121,29 @@ export function Canvas() {
           {cards.length === 0 ? (
             <EmptyCard />
           ) : (
-            <div className="inline-flex flex-nowrap items-start gap-6 pr-[340vw]">
-              {cards.map((card) => {
-                const template = templates.find((item) => item.id === card.templateId);
-                if (!template) return null;
-                return (
-                  <TemplateCard
-                    card={card}
-                    key={card.id}
-                    selected={selectedId === card.id}
-                    setCardNode={setCardNode}
-                    template={template}
-                  />
-                );
-              })}
+            <div className="flex flex-col gap-12 pr-[340vw]">
+              {folderGroups.map((group) => (
+                <section key={group.folder}>
+                  <div className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">
+                    {group.folder}
+                  </div>
+                  <div className="inline-flex flex-nowrap items-start gap-6">
+                    {group.cards.map((card) => {
+                      const template = templates.find((item) => item.id === card.templateId);
+                      if (!template) return null;
+                      return (
+                        <TemplateCard
+                          card={card}
+                          key={card.id}
+                          selected={selectedId === card.id}
+                          setCardNode={setCardNode}
+                          template={template}
+                        />
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
             </div>
           )}
         </div>

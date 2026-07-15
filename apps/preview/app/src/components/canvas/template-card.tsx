@@ -39,19 +39,25 @@ export function TemplateCard({ card, selected, setCardNode, template }: Template
 
   const activePreset =
     previewPresets.find((item) => item.name === lab?.preset) || previewPresets[0];
-  const previewHtml = lab?.invertColors ? applyGmailInversion(template.html) : template.html;
+  const activeData =
+    template.presets.find((preset) => preset.name === lab?.dataPreset) ?? template.presets[0];
+  const activeHtml = activeData?.html ?? template.html;
+  const activePlain = activeData?.plain ?? template.plain;
+  const previewHtml = lab?.invertColors ? applyGmailInversion(activeHtml) : activeHtml;
+  const compareSizes = previewPresets.filter((preset) => preset.width);
   const code = useMemo(() => {
-    if (tab === 'html') return template.html;
-    if (tab === 'plain') return template.plain;
+    if (tab === 'html') return activeHtml;
+    if (tab === 'plain') return activePlain ?? '';
     return template.source;
-  }, [tab, template]);
+  }, [tab, template.source, activeHtml, activePlain]);
   const sourceLang = tab === 'jsx' ? 'tsx' : tab === 'html' ? 'html' : 'text';
   const sourceFileName = `${template.path}.${tab === 'jsx' ? 'tsx' : tab === 'html' ? 'html' : 'txt'}`;
 
   return (
     <div
       className={cn(
-        'inline-block w-[var(--card-width)] rounded-[6px] align-top transition',
+        'inline-block rounded-[6px] align-top transition',
+        activePreset.all ? 'w-auto' : 'w-[var(--card-width)]',
         selected
           ? 'cursor-default ring-2 ring-[var(--ring)] ring-offset-2 ring-offset-white dark:ring-offset-black'
           : 'cursor-pointer'
@@ -111,18 +117,42 @@ export function TemplateCard({ card, selected, setCardNode, template }: Template
         </div>
         <div className="h-[623px] bg-[var(--surface-muted)] p-5">
           {tab === 'preview' ? (
-            <div
-              className={cn(
-                'preview-frame-shell h-full overflow-hidden rounded-[var(--radius)] border border-[var(--border)] shadow-sm',
-                activePreset.width && 'is-mobile',
-                lab?.colorScheme && 'is-dark-scheme'
-              )}
-              style={{
-                width: activePreset.width ? `${activePreset.width}px` : '100%'
-              }}
-            >
-              <PreviewIframe html={previewHtml} title={template.templateName} />
-            </div>
+            activePreset.all ? (
+              <div className="flex h-full items-stretch gap-4 overflow-x-auto">
+                {compareSizes.map((preset) => (
+                  <div className="flex h-full shrink-0 flex-col" key={preset.name}>
+                    <div className="mb-2 text-center text-[11px] font-medium text-[var(--text-muted)]">
+                      {preset.name} · {preset.label}
+                    </div>
+                    <div
+                      className={cn(
+                        'preview-frame-shell is-mobile min-h-0 flex-1 overflow-hidden rounded-[var(--radius)] border border-[var(--border)] shadow-sm',
+                        lab?.colorScheme && 'is-dark-scheme'
+                      )}
+                      style={{ width: `${preset.width}px` }}
+                    >
+                      <PreviewIframe
+                        html={previewHtml}
+                        title={`${template.templateName} — ${preset.name}`}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  'preview-frame-shell h-full overflow-hidden rounded-[var(--radius)] border border-[var(--border)] shadow-sm',
+                  activePreset.width && 'is-mobile',
+                  lab?.colorScheme && 'is-dark-scheme'
+                )}
+                style={{
+                  width: activePreset.width ? `${activePreset.width}px` : '100%'
+                }}
+              >
+                <PreviewIframe html={previewHtml} title={template.templateName} />
+              </div>
+            )
           ) : (
             <CodeBlock code={code} fileName={sourceFileName} lang={sourceLang} />
           )}

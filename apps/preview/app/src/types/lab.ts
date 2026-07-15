@@ -1,5 +1,7 @@
 export interface LabState {
   colorScheme: boolean;
+  // Name of the active sample-data preset ('' = the template's first/default).
+  dataPreset: string;
   invertColors: boolean;
   preset: string;
   sendEmail: string;
