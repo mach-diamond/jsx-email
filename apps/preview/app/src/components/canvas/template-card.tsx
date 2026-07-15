@@ -57,15 +57,16 @@ export function TemplateCard({ card, selected, setCardNode, template }: Template
     <div
       className={cn(
         'inline-block rounded-[6px] align-top transition',
-        activePreset.all ? 'w-auto' : 'w-[var(--card-width)]',
+        activePreset.all ? 'w-[920px]' : 'w-[var(--card-width)]',
         selected
           ? 'cursor-default ring-2 ring-[var(--ring)] ring-offset-2 ring-offset-white dark:ring-offset-black'
           : 'cursor-pointer'
       )}
+      data-card-id={card.id}
       onClick={() => focusCard(card.id)}
       ref={(node) => setCardNode(card.id, node)}
     >
-      <article className="app-panel h-[680px] overflow-hidden">
+      <article className={cn('app-panel overflow-hidden', !activePreset.all && 'h-[680px]')}>
         <div className="flex items-center justify-between border-b border-[var(--border)] p-3">
           <button
             className="min-w-0 text-left"
@@ -115,18 +116,18 @@ export function TemplateCard({ card, selected, setCardNode, template }: Template
             </Button>
           </div>
         </div>
-        <div className="h-[623px] bg-[var(--surface-muted)] p-5">
+        <div className={cn('bg-[var(--surface-muted)] p-5', !activePreset.all && 'h-[623px]')}>
           {tab === 'preview' ? (
             activePreset.all ? (
-              <div className="flex h-full items-stretch gap-4 overflow-x-auto">
+              <div className="flex flex-wrap justify-center gap-5">
                 {compareSizes.map((preset) => (
-                  <div className="flex h-full shrink-0 flex-col" key={preset.name}>
-                    <div className="mb-2 text-center text-[11px] font-medium text-[var(--text-muted)]">
+                  <figure className="m-0 flex flex-col" key={preset.name}>
+                    <figcaption className="mb-2 text-center text-[11px] font-medium text-[var(--text-muted)]">
                       {preset.name} · {preset.label}
-                    </div>
+                    </figcaption>
                     <div
                       className={cn(
-                        'preview-frame-shell is-mobile min-h-0 flex-1 overflow-hidden rounded-[var(--radius)] border border-[var(--border)] shadow-sm',
+                        'preview-frame-shell is-mobile h-[540px] overflow-hidden rounded-[var(--radius)] border border-[var(--border)] shadow-sm',
                         lab?.colorScheme && 'is-dark-scheme'
                       )}
                       style={{ width: `${preset.width}px` }}
@@ -136,7 +137,7 @@ export function TemplateCard({ card, selected, setCardNode, template }: Template
                         title={`${template.templateName} — ${preset.name}`}
                       />
                     </div>
-                  </div>
+                  </figure>
                 ))}
               </div>
             ) : (

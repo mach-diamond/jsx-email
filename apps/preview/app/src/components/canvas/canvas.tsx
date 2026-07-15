@@ -38,25 +38,54 @@ export function Canvas() {
   useLayoutEffect(() => {
     if (!focusRequest) return;
 
-    const frame = requestAnimationFrame(() => {
+    const scrollToCard = () => {
       const canvas = canvasRef.current;
-      const card = cardNodes.current.get(focusRequest.id);
+      // Prefer a DOM lookup over the cardNodes ref map: the map is rewritten on
+      // every render (the ref callback is recreated each time), so it can be
+      // transiently empty for the freshly-opened card when this fires.
+      const card =
+        (canvas?.querySelector(
+          `[data-card-id="${CSS.escape(focusRequest.id)}"]`
+        ) as HTMLElement | null) ?? cardNodes.current.get(focusRequest.id);
       if (!canvas || !card) return;
       const canvasRect = canvas.getBoundingClientRect();
       const workspaceCenter = getWorkspaceCenter(canvasRect);
       const cardRect = card.getBoundingClientRect();
       const cardCenter = cardRect.left + cardRect.width / 2;
 
+      // Vertical centering, now that folders stack cards into multiple rows.
+      // The canvas clears the fixed header with top padding, so measure it to
+      // find the usable area. Cards that fit get centered; taller ones (e.g.
+      // the All-Sizes collage) align their top just under the header instead of
+      // centering their midpoint offscreen.
+      const topInset = parseFloat(getComputedStyle(canvas).paddingTop) || 0;
+      const visibleTop = canvasRect.top + topInset;
+      const visibleHeight = canvasRect.height - topInset;
+      const verticalDelta =
+        cardRect.height <= visibleHeight
+          ? cardRect.top + cardRect.height / 2 - (visibleTop + visibleHeight / 2)
+          : cardRect.top - visibleTop;
+
       canvas.scrollTo({
         behavior: previousSelectedId.current ? 'smooth' : 'auto',
         left: canvas.scrollLeft + cardCenter - workspaceCenter,
-        top: canvas.scrollTop
+        top: canvas.scrollTop + verticalDelta
       });
       previousSelectedId.current = focusRequest.id;
+    };
+
+    // Double rAF: a freshly-opened card needs one frame to mount and lay out
+    // before its rect is meaningful.
+    let inner = 0;
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(scrollToCard);
     });
 
-    return () => cancelAnimationFrame(frame);
-  }, [focusRequest, cards.length]);
+    return () => {
+      cancelAnimationFrame(outer);
+      cancelAnimationFrame(inner);
+    };
+  }, [focusRequest]);
 
   function setCardNode(id: string, node: HTMLDivElement | null) {
     if (node) cardNodes.current.set(id, node);
