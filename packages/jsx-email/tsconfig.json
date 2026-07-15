@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "paths": {
+      "jsx-email": ["./src/index.ts"],
+      "jsx-email/*": ["./src/*"]
+    }
   },
   "extends": "../../shared/tsconfig.base.json",
   "include": ["src"]
