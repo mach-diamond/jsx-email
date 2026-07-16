@@ -35,6 +35,7 @@ tasks:
     inputs:
       - src
       - package.json
+      - tsconfig.json
     options:
       mergeArgs: replace
       runDepsInParallel: false

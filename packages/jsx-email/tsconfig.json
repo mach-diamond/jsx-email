@@ -1,7 +1,16 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    // Self-name imports must resolve to this package's src during compile.
+    // clean.dist wipes ./dist before tsc runs, so a bare 'jsx-email' inside a
+    // dependency's d.ts (e.g. @jsx-email/plugin-*) would otherwise walk up to
+    // an ancestor node_modules and load a second, possibly version-skewed copy
+    // of these types — duplicating the 'jsx-email-cond' JSX augmentation and
+    // failing with TS2717 in host workspaces that hoist npm jsx-email.
+    "paths": {
+      "jsx-email": ["./src/index.ts"]
+    }
   },
   "extends": "../../shared/tsconfig.base.json",
   "include": ["src"]
