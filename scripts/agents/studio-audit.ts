@@ -32,6 +32,7 @@ const main = async () => {
       assert.equal(await page.locator('.studio-brand-card').count(), 1);
       await page.getByRole('searchbox').fill('');
       await page.getByRole('link', { name: /id4.finance.*7 templates/ }).click();
+      await page.getByRole('button', { name: 'Account Access', exact: true }).click();
       await page.getByRole('button', { name: 'MagicLinkSignInEmail', exact: true }).click();
       await page.waitForFunction(() => window.location.hash.includes('magiclinksigninemail'));
       const frames = page.locator('iframe');
@@ -53,7 +54,7 @@ const main = async () => {
         })
       );
       const magic = (templates: { path: string; html: string }[]) =>
-        templates.find((t) => t.path === 'MagicLinkSignInEmail')!.html;
+        templates.find((t) => t.path.endsWith('/MagicLinkSignInEmail'))!.html;
       assert.match(magic(ember), /Sign in to Ember/);
       assert.doesNotMatch(magic(ember), /Sign in to id4/);
       assert.match(magic(id4), /Sign in to id4/);
@@ -63,6 +64,39 @@ const main = async () => {
       const denied = await fetch(`${base}/__studio/templates?project=${other}&brand=boc`);
       assert.equal(denied.status, 404);
     }
+    assert.equal(await page.getByText('The Tape', { exact: true }).count(), 0);
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll<HTMLImageElement>('.studio-brand-art img')].every(
+        (img) => img.complete && img.naturalWidth > 0
+      )
+    );
+    await page.getByRole('link', { name: 'Compare classes', exact: true }).click();
+    await page.getByRole('heading', { name: 'Compare across brands.' }).waitFor();
+    if (scope !== 'jewelry') {
+      await page.getByLabel('Template', { exact: true }).selectOption('MagicLinkSignInEmail');
+      await page.waitForFunction(
+        () => document.querySelectorAll('.studio-comparison-card iframe').length === 8
+      );
+      assert.equal(
+        await page.getByRole('heading', { name: 'Matrix Media', exact: true }).count(),
+        1
+      );
+      await page.screenshot({ path: `${output}/${scope}-compare.png`, fullPage: false });
+      await page.getByRole('link', { name: 'Open template ↗' }).first().click();
+      await page.waitForFunction(() =>
+        location.hash.includes('account-access-magiclinksigninemail')
+      );
+      await page.locator('iframe').first().waitFor();
+    }
+    await page.getByRole('link', { name: 'Analytics', exact: true }).click();
+    await page.getByRole('heading', { name: 'Usage & delivery.' }).waitFor();
+    await page.waitForFunction(
+      () => /AWS connection needs attention|Daily sends/.test(document.body.innerText),
+      { timeout: 60000 }
+    );
+    await page.screenshot({ path: `${output}/${scope}-analytics.png`, fullPage: true });
+    await page.getByRole('link', { name: 'Brands', exact: true }).click();
+    await page.getByRole('heading', { name: 'Your brands. Every message.' }).waitFor();
     await page.setViewportSize({ width: 390, height: 844 });
     await page.screenshot({ path: `${output}/${scope}-mobile.png`, fullPage: true });
     assert.equal(
