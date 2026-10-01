@@ -65,11 +65,15 @@ const main = async () => {
       assert.equal(denied.status, 404);
     }
     assert.equal(await page.getByText('The Tape', { exact: true }).count(), 0);
+    for (const img of await page.locator('.studio-brand-art img').all())
+      await img.scrollIntoViewIfNeeded();
     await page.waitForFunction(() =>
       [...document.querySelectorAll<HTMLImageElement>('.studio-brand-art img')].every(
         (img) => img.complete && img.naturalWidth > 0
       )
     );
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ path: `${output}/${scope}-home.png`, fullPage: true });
     await page.getByRole('link', { name: 'Compare classes', exact: true }).click();
     await page.getByRole('heading', { name: 'Compare across brands.' }).waitFor();
     if (scope !== 'jewelry') {
@@ -92,6 +96,7 @@ const main = async () => {
     await page.getByRole('heading', { name: 'Usage & delivery.' }).waitFor();
     await page.waitForFunction(
       () => /AWS connection needs attention|Daily sends/.test(document.body.innerText),
+      undefined,
       { timeout: 60000 }
     );
     await page.screenshot({ path: `${output}/${scope}-analytics.png`, fullPage: true });
