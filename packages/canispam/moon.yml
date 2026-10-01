@@ -2,6 +2,19 @@
 $schema: 'https://moonrepo.dev/schemas/project.json'
 
 tasks:
+  build:
+    deps:
+      - ~:copy.classifier
+
+  compile:
+    outputs:
+      - dist
+
+  copy.classifier:
+    command: cp src/classifier/spamscanner-classifier.json dist/classifier/spamscanner-classifier.json
+    options:
+      cache: false
+
   test:
     command: vitest --config vitest.config.ts
     deps:
