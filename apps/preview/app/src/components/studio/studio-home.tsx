@@ -6,6 +6,8 @@ export interface StudioBrand {
   description: string;
   color: string;
   count: number;
+  screenshot?: string;
+  classes?: { id: string; name: string; count: number }[];
 }
 export interface StudioCatalogProject {
   id: string;
@@ -13,6 +15,7 @@ export interface StudioCatalogProject {
   description: string;
   brands: StudioBrand[];
   error?: string;
+  analytics?: boolean;
 }
 
 export const StudioHome = ({ projects }: { projects: StudioCatalogProject[] }) => {
@@ -76,12 +79,14 @@ export const StudioHome = ({ projects }: { projects: StudioCatalogProject[] }) =
                     style={{ background: brand.color }}
                     aria-hidden="true"
                   >
-                    <div className="studio-envelope">
-                      <div />
-                      <div />
-                      <div />
-                    </div>
-                    <span>{brand.name}</span>
+                    {brand.screenshot ? (
+                      <img src={brand.screenshot} alt="" loading="lazy" width="1280" height="800" />
+                    ) : (
+                      <>
+                        <span>{brand.name}</span>
+                        <small>Frontend preview coming soon</small>
+                      </>
+                    )}
                   </div>
                   <div className="studio-brand-copy">
                     <h3>

@@ -20,7 +20,14 @@ describe('studio library', () => {
               name: 'Shop',
               description: 'Orders',
               brands: [
-                { id: 'gold', name: 'Gold', description: 'Jewelry', color: '#222', count: 2 }
+                {
+                  id: 'gold',
+                  name: 'Gold',
+                  description: 'Jewelry',
+                  color: '#222',
+                  count: 2,
+                  screenshot: '/__studio/assets/shop/frontend.png'
+                }
               ]
             },
             {
@@ -36,6 +43,10 @@ describe('studio library', () => {
     );
     expect(container.querySelector('a')?.getAttribute('href')).toBe('?project=shop&brand=gold');
     expect(container.querySelector('[role="alert"]')?.textContent).toBe('Checkout missing');
+    expect(container.querySelector('img')?.getAttribute('src')).toBe(
+      '/__studio/assets/shop/frontend.png'
+    );
+    expect(container.querySelector('img')?.getAttribute('loading')).toBe('lazy');
     expect(container.textContent).toContain('2 templates');
     expect(container.querySelector('input')?.getAttribute('type')).toBe('search');
     act(() => root.unmount());

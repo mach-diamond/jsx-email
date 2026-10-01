@@ -6,6 +6,7 @@ export default {
     { id: 'alpha', name: 'Alpha' },
     { id: 'beta', name: 'Beta', templates: ['welcome.tsx'] },
   ],
+  templateClasses: [{ id: 'welcome', name: 'Welcome', templates: ['welcome.tsx'] }],
   render,
   withBrand: (id: string, run: () => Promise<string>) => brand.run(id, run),
 };

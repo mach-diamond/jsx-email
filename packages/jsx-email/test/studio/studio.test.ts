@@ -49,6 +49,11 @@ describe('studio rendering', () => {
       renderBrandTemplates(project, 'beta')
     ]);
     const welcome = alpha.find((item) => item.path === 'welcome')!;
+    expect(
+      (await renderBrandTemplates(project, 'alpha', 'welcome')).map((item) => item.path)
+    ).toEqual(['welcome']);
+    expect(await renderBrandTemplates(project, 'alpha', 'missing')).toEqual([]);
+    expect(welcome.templateClass).toEqual({ id: 'welcome', name: 'Welcome' });
     expect(welcome.html).toContain('alpha: Alex');
     expect(welcome.presets[1].html).toContain('alpha: Sam');
     expect(beta[0].html).toContain('beta: Alex');

@@ -37,6 +37,16 @@ it('serves only registered projects, survives bad saves, and reloads recovered t
     expect(catalog.map((project: { id: string }) => project.id)).toEqual(['fixture']);
     const unknown = await fetch(`${base}__studio/templates?project=other&brand=alpha`);
     expect(unknown.status).toBe(404);
+    const filtered = await fetch(
+      `${base}__studio/templates?project=fixture&brand=alpha&class=welcome`
+    ).then((reply) => reply.json());
+    expect(filtered).toHaveLength(1);
+    expect(catalog[0].brands[0].classes).toContainEqual({
+      id: 'welcome',
+      name: 'Welcome',
+      count: 1
+    });
+    expect((await fetch(`${base}__studio/analytics?project=other`)).status).toBe(404);
     const templates = () => fetch(`${base}__studio/templates?project=fixture&brand=beta`);
     expect((await (await templates()).json())[0].html).toContain('beta: Alex');
     await writeFile(file, 'this is invalid tsx <');

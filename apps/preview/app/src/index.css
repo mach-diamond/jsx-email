@@ -1396,3 +1396,234 @@ html.is-zooming-out #tool-panel * {
     transition: none;
   }
 }
+
+/* Shared studio views: brand library, comparison, and operational analytics. */
+.studio-brand-art {
+  height: auto;
+  aspect-ratio: 8 / 5;
+}
+.studio-brand-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+.studio-brand-art small {
+  color: #fff;
+  font-size: 12px;
+}
+.studio-header nav [aria-current='page'] {
+  color: #17191d;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+.studio-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  margin: 28px 0;
+}
+.studio-filters label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  flex: 1 1 190px;
+  min-width: 0;
+}
+.studio-filters select {
+  background: #fff;
+  color: #202124;
+  border: 1px solid #b9bdc3;
+  border-radius: 6px;
+  min-height: 44px;
+  padding: 9px 12px;
+  max-width: 100%;
+}
+.studio-filters button {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid #b9bdc3;
+  border-radius: 6px;
+  background: #fff;
+  color: #202124;
+  cursor: pointer;
+}
+.studio-filters button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.studio-shell select:focus-visible,
+.studio-shell summary:focus-visible,
+.studio-shell [tabindex]:focus-visible {
+  outline: 3px solid #2767b7;
+  outline-offset: 3px;
+}
+.studio-comparison-grid {
+  display: grid;
+  gap: 24px;
+}
+.studio-comparison-card {
+  min-width: 0;
+  border: 1px solid #d5d8dc;
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+.studio-comparison-card header {
+  padding: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+}
+.studio-comparison-card h2,
+.studio-data-panel h2 {
+  font-size: 18px;
+  font-weight: 650;
+  margin: 0 0 6px;
+}
+.studio-comparison-card p {
+  color: #535b65;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.studio-comparison-card a {
+  color: #185e9e;
+  font-size: 13px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+}
+.studio-comparison-viewport {
+  overflow: auto;
+  background: #e8ebee;
+  padding: 16px;
+}
+.studio-comparison-viewport iframe {
+  display: block;
+  border: 0;
+  margin: auto;
+  max-width: none;
+  background: #fff;
+}
+.studio-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.studio-metric-grid article,
+.studio-data-panel {
+  border: 1px solid #d5d8dc;
+  background: #fff;
+  padding: 24px;
+  border-radius: 10px;
+}
+.studio-metric-grid h2 {
+  font-size: 14px;
+  color: #535b65;
+  margin: 0;
+}
+.studio-metric-grid strong {
+  display: block;
+  font-size: 34px;
+  letter-spacing: -0.04em;
+  margin: 8px 0;
+}
+.studio-metric-grid p,
+.studio-data-panel p,
+.studio-data-scope,
+.studio-data-footnote {
+  color: #535b65;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.studio-data-panel {
+  margin: 24px 0;
+}
+.studio-data-panel summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 12px 0;
+}
+.studio-table-scroll {
+  overflow-x: auto;
+}
+.studio-table-scroll table {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: collapse;
+  text-align: right;
+}
+.studio-table-scroll td,
+.studio-table-scroll th {
+  padding: 10px;
+  border-bottom: 1px solid #dde0e4;
+  white-space: nowrap;
+}
+.studio-table-scroll caption {
+  text-align: left;
+  color: #535b65;
+  margin-bottom: 12px;
+}
+.studio-quota {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 18px;
+}
+.studio-quota dt {
+  font-size: 12px;
+  color: #535b65;
+  margin-bottom: 6px;
+}
+.studio-quota dd {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+.studio-send-chart {
+  height: 150px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  margin: 24px 0;
+  border-bottom: 1px solid #b9bdc3;
+}
+.studio-send-chart > div {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+.studio-send-chart span {
+  display: block;
+  width: 100%;
+  background: #2767b7;
+  border-radius: 2px 2px 0 0;
+}
+@media (max-width: 640px) {
+  .studio-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .studio-metric-grid article,
+  .studio-data-panel {
+    padding: 16px;
+  }
+  .studio-header nav {
+    flex-wrap: wrap;
+  }
+  .studio-comparison-card header {
+    padding: 12px;
+  }
+}
+
+.studio-compare {
+  max-width: none;
+  padding-left: 24px;
+  padding-right: 24px;
+}

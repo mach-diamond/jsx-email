@@ -1,10 +1,8 @@
-import { createReadStream } from 'node:fs';
-import { mkdtemp, realpath, rm, stat } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 
 import react from '@vitejs/plugin-react';
-import mime from 'mime-types';
 import { createServer } from 'vite';
 
 import {
@@ -14,11 +12,15 @@ import {
   type LoadedProject
 } from './loader.js';
 
+import { studioProjectSummary, serveStudioAsset } from './catalog.js';
+import { createAnalyticsReader } from './analytics.js';
+
 export const startStudio = async (
   configPaths: string[],
   options: { port?: number; host?: boolean; open?: boolean } = {}
 ) => {
   const loader = createProjectLoader();
+  const analytics = createAnalyticsReader();
   const loaded = new Map<string, Promise<LoadedProject>>();
   const knownProjects = new Map<string, string>();
   const rendered = new WeakMap<
@@ -53,15 +55,7 @@ export const startStudio = async (
           const { config } = project;
           if (ids.has(config.id)) throw new TypeError(`Duplicate project id: ${config.id}`);
           ids.add(config.id);
-          return {
-            id: config.id,
-            name: config.name,
-            description: config.description,
-            brands: config.brands.map(({ templates: _, ...brand }) => ({
-              ...brand,
-              count: brandTemplateFiles(project, brand.id).length
-            }))
-          };
+          return studioProjectSummary(project);
         } catch (error) {
           return {
             id: path,
@@ -125,26 +119,27 @@ export const startStudio = async (
                   return;
                 }
                 if (asset) {
-                  if (!project.config.assetDir) {
-                    response.statusCode = 404;
+                  await serveStudioAsset(project, asset[2], response);
+                  return;
+                }
+                if (url.pathname === '/__studio/analytics') {
+                  if (
+                    request.headers.origin &&
+                    new URL(request.headers.origin).host !== request.headers.host
+                  ) {
+                    response.statusCode = 403;
                     response.end();
                     return;
                   }
-                  const assetRoot = await realpath(
-                    resolve(dirname(project.configPath), project.config.assetDir)
+                  if (!project.config.analytics)
+                    throw new TypeError('AWS analytics is not configured for this project.');
+                  data = await analytics(
+                    project.config.analytics,
+                    Number(url.searchParams.get('days') || 30),
+                    url.searchParams.get('scope') || 'account'
                   );
-                  const file = await realpath(resolve(assetRoot, decodeURIComponent(asset[2])));
-                  const path = relative(assetRoot, file);
-                  if (path.startsWith('..') || isAbsolute(path) || !(await stat(file)).isFile()) {
-                    response.statusCode = 404;
-                    response.end();
-                    return;
-                  }
-                  response.setHeader(
-                    'Content-Type',
-                    mime.lookup(file) || 'application/octet-stream'
-                  );
-                  createReadStream(file).pipe(response);
+                  response.setHeader('Content-Type', 'application/json');
+                  response.end(JSON.stringify(data));
                   return;
                 }
                 if (url.pathname !== '/__studio/templates') {
@@ -154,7 +149,8 @@ export const startStudio = async (
                 }
                 const brand = url.searchParams.get('brand') || '';
                 brandTemplateFiles(project, brand);
-                const key = brand;
+                const classId = url.searchParams.get('class') || undefined;
+                const key = JSON.stringify([brand, classId]);
                 const cache =
                   rendered.get(project) ??
                   new Map<string, ReturnType<typeof renderBrandTemplates>>();
@@ -162,7 +158,7 @@ export const startStudio = async (
                 if (!cache.has(key))
                   cache.set(
                     key,
-                    renderBrandTemplates(project, brand).catch((error) => {
+                    renderBrandTemplates(project, brand, classId).catch((error) => {
                       cache.delete(key);
                       throw error;
                     })
@@ -174,7 +170,9 @@ export const startStudio = async (
             } catch (error) {
               response.statusCode = 500;
               response.setHeader('Content-Type', 'application/json');
-              response.end(JSON.stringify({ error: String(error) }));
+              response.end(
+                JSON.stringify({ error: error instanceof Error ? error.message : String(error) })
+              );
             }
           });
         }

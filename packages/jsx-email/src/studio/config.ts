@@ -17,12 +17,18 @@ export const projectSchema = object({
   description: optional(string(), ''),
   templateDir: string(),
   assetDir: optional(string()),
+  analytics: optional(object({ profile: optional(string()), region: string() })),
+  templateClasses: optional(
+    array(object({ id: identifier, name: string(), templates: array(string()) })),
+    []
+  ),
   brands: array(
     object({
       id: identifier,
       name: string(),
       description: optional(string(), ''),
       color: optional(string(), '#252525'),
+      screenshot: optional(string()),
       templates: optional(array(string()), ['**/*'])
     })
   ),

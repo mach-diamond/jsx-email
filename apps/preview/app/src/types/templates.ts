@@ -19,6 +19,7 @@ export interface PreviewImportContent {
 export type TemplateTab = 'preview' | 'jsx' | 'html' | 'plain';
 
 export interface TemplateData {
+  templateClass?: { id: string; name: string };
   fileExtension: string;
   fileName: string;
   html: string;

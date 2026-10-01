@@ -88,8 +88,24 @@ export const brandTemplateFiles = (project: LoadedProject, brandId: string) => {
   );
 };
 
-export const renderBrandTemplates = async (project: LoadedProject, brandId: string) => {
-  const selected = brandTemplateFiles(project, brandId);
+export const templateClassFor = (project: LoadedProject, file: string) => {
+  const path = projectTemplatePath(project, file);
+  const configured = project.config.templateClasses.find((item) =>
+    micromatch.isMatch(path, item.templates)
+  );
+  if (configured) return { id: configured.id, name: configured.name };
+  const name = path.includes('/') ? path.split('/')[0] : 'General';
+  return { id: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name };
+};
+
+export const renderBrandTemplates = async (
+  project: LoadedProject,
+  brandId: string,
+  classId?: string
+) => {
+  const selected = brandTemplateFiles(project, brandId).filter(
+    (file) => !classId || templateClassFor(project, file).id === classId
+  );
   const { config } = project;
   const renderEmail = config.render ?? render;
   return Promise.all(
@@ -124,6 +140,7 @@ export const renderBrandTemplates = async (project: LoadedProject, brandId: stri
         fileName: route,
         fileExtension: '.tsx',
         templateName: template.templateName || route.split('/').at(-1)!,
+        templateClass: templateClassFor(project, file),
         html: presets[0].html,
         plain: presets[0].plain,
         presets,

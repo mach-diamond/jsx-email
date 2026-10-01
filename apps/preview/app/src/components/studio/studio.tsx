@@ -4,8 +4,12 @@ import type { TemplateData } from '../../types/templates';
 import { usePreviewStore } from '../../stores/preview-store';
 import { StudioHome, type StudioCatalogProject } from './studio-home';
 
+import { StudioCompare } from './studio-compare';
+import { StudioAnalytics } from './studio-analytics';
+
 export const Studio = ({ children }: { children: ReactNode }) => {
   const params = new URLSearchParams(window.location.search);
+  const view = params.get('view') || 'brands';
   const projectId = params.get('project');
   const brandId = params.get('brand');
   const [projects, setProjects] = useState<StudioCatalogProject[]>([]);
@@ -30,7 +34,7 @@ export const Studio = ({ children }: { children: ReactNode }) => {
         const catalog = await read<StudioCatalogProject[]>('/__studio/catalog');
         if (current !== generation.current) return;
         setProjects(catalog);
-        if (projectId || brandId) {
+        if (view === 'brands' && (projectId || brandId)) {
           const project = catalog.find((item) => item.id === projectId);
           if (!project?.brands.some((brand) => brand.id === brandId))
             throw new TypeError(project?.error || 'This brand is not available in this studio.');
@@ -44,14 +48,15 @@ export const Studio = ({ children }: { children: ReactNode }) => {
         setError('');
         setReady(true);
       } catch (reason) {
-        if (!controller.signal.aborted) setError(String(reason));
+        if (!controller.signal.aborted)
+          setError(reason instanceof Error ? reason.message : String(reason));
       } finally {
         if (!controller.signal.aborted) setBusy(false);
       }
     };
     void load();
     return () => controller.abort();
-  }, [projectId, brandId, revision]);
+  }, [projectId, brandId, revision, view]);
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
     const changed = () => {
@@ -73,7 +78,15 @@ export const Studio = ({ children }: { children: ReactNode }) => {
           Email<span>Studio</span>
         </a>
         <nav aria-label="Breadcrumb">
-          <a href="/">{projects.length === 1 ? 'Project' : 'Projects'}</a>
+          <a href="/" aria-current={view === 'brands' ? 'page' : undefined}>
+            Brands
+          </a>
+          <a href="?view=compare" aria-current={view === 'compare' ? 'page' : undefined}>
+            Compare classes
+          </a>
+          <a href="?view=analytics" aria-current={view === 'analytics' ? 'page' : undefined}>
+            Analytics
+          </a>
           {brand && (
             <>
               <span aria-hidden="true">/</span>
@@ -102,7 +115,11 @@ export const Studio = ({ children }: { children: ReactNode }) => {
         </main>
       )}
       {ready &&
-        (brand ? (
+        (view === 'compare' ? (
+          <StudioCompare projects={projects} revision={revision} />
+        ) : view === 'analytics' ? (
+          <StudioAnalytics projects={projects} />
+        ) : brand ? (
           <div className="studio-workspace">{children}</div>
         ) : (
           <StudioHome projects={projects} />

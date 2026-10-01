@@ -114,3 +114,32 @@ Project launchers can use `EMAIL_STUDIO_ROOT` to select another checkout.
 Without a shared checkout they bootstrap the fork into their own ignored
 `node_modules/.cache` directory, so a standalone project clone needs no other
 venture repositories. Project dependencies must be installed normally.
+
+### Screenshots, classes, and analytics
+
+Each brand can set `screenshot` to a path inside its project's `assetDir`.
+The registered projects carry copies of Project Management's existing frontend
+captures in `project-data/public/studio`, so standalone clones keep their cards.
+Brands without captures show their name and an explicit placeholder.
+
+`templateClasses` contains `{ id, name, templates: [glob] }` entries. Reuse a class
+ID across projects to compare equivalent messages. Unmatched templates inherit
+their top-level folder as their class. The **Compare classes** view filters by
+project, class, template, and email width; **Open template** returns to the editor.
+
+Set `analytics: { profile, region }` in the project configuration to enable the
+**Analytics** page. It uses the local AWS CLI session, with read-only
+`ses:GetAccount`, `cloudwatch:ListMetrics`, and `cloudwatch:GetMetricData` calls.
+The BoC connection defaults to the `boc` profile in `us-east-1`; Jewelry uses the
+normal AWS credential chain in `us-east-1`. Override the profile and region before
+launching with `EMAIL_STUDIO_BOC_AWS_PROFILE`, `EMAIL_STUDIO_BOC_AWS_REGION`,
+`EMAIL_STUDIO_JEWELRY_AWS_PROFILE`, and `EMAIL_STUDIO_JEWELRY_AWS_REGION`.
+SSO users can refresh with `aws sso login --profile <profile>` and retry in the UI.
+Browser-console login alone does not authenticate the CLI.
+
+The overview shows 7/30/90-day SES event counts, daily UTC activity, sandbox and
+sending status, and account quota. Account totals are explicitly account-wide;
+the metric-scope selector offers only dimensions actually published to CloudWatch.
+No datapoints are shown as unavailable, not zero. Brand/template breakdowns need
+SES event publishing with those dimensions; this studio does not change AWS
+infrastructure or send email. Responses are cached for 60 seconds.

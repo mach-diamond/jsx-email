@@ -52,6 +52,10 @@ const sourceFiles = [
   'components/file-system/file-system-panel.tsx',
   'components/header.tsx',
   'components/studio/studio-home.tsx',
+  'components/studio/studio-comparison-card.tsx',
+  'components/studio/studio-compare.tsx',
+  'components/studio/studio-metrics.tsx',
+  'components/studio/studio-analytics.tsx',
   'components/studio/studio.tsx',
   'app.tsx',
   'main.tsx'
