@@ -85,6 +85,10 @@ const main = async () => {
         await page.getByRole('heading', { name: 'Matrix Media', exact: true }).count(),
         1
       );
+      const cards = page.locator('.studio-comparison-card');
+      const first = await cards.nth(0).boundingBox();
+      const second = await cards.nth(1).boundingBox();
+      assert.equal(first?.y, second?.y, 'Desktop comparison should show two brands side by side');
       await page.screenshot({ path: `${output}/${scope}-compare.png`, fullPage: false });
       await page.getByRole('link', { name: 'Open template ↗' }).first().click();
       await page.waitForFunction(() =>
