@@ -10,6 +10,11 @@ workspace:
     exclude: ['build', 'compile', 'release', 'test']
 
 tasks:
+  studio.banners.audit:
+    command: tsx scripts/agents/brand-banners-audit.ts
+    options:
+      cache: false
+
   studio.audit:
     command: tsx scripts/agents/studio-audit.ts
     options:
