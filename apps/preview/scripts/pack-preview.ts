@@ -51,6 +51,8 @@ const sourceFiles = [
   'components/file-system/file-tree.tsx',
   'components/file-system/file-system-panel.tsx',
   'components/header.tsx',
+  'components/studio/studio-home.tsx',
+  'components/studio/studio.tsx',
   'app.tsx',
   'main.tsx'
 ];

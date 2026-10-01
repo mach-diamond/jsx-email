@@ -24,6 +24,7 @@ The jsx-email CLI. Build, Check, Create and View email templates
   create      {dim <template name>}
   help        [{dim <command>}]
   preview     {dim <templates dir path>}
+  studio      {dim [--project <config.ts> | --registry <projects.json>]}
 
 {underline Options}
   --help      Displays this message

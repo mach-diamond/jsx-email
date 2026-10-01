@@ -6,6 +6,13 @@ workspace:
     exclude: ['build', 'compile']
 
 tasks:
+  test.studio:
+    deps:
+      - ~:build
+    command: vitest run test/studio --config ../../shared/vitest.config.ts
+    options:
+      cache: false
+
   build:
     command: echo "Build Complete ✓"
     deps:

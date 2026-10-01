@@ -9,6 +9,7 @@ import { command as check } from './commands/check.js';
 import { command as create } from './commands/create.js';
 import { command as help } from './commands/help.js';
 import { command as preview } from './commands/preview.js';
+import { command as studio } from './commands/studio.js';
 import type { CommandFn } from './commands/types.js';
 // Note: I'm not a huge fan of importing this here, but it guarantees that we capture
 // the cwd before anything else futzes with it
@@ -16,7 +17,7 @@ import type { CommandFn } from './commands/types.js';
 // eslint-disable-next-line
 import { originalCwd } from './helpers.js';
 
-const commands: Record<string, CommandFn> = { build, check, create, help, preview };
+const commands: Record<string, CommandFn> = { build, check, create, help, preview, studio };
 
 const { log } = console;
 

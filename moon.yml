@@ -10,6 +10,17 @@ workspace:
     exclude: ['build', 'compile', 'release', 'test']
 
 tasks:
+  studio.audit:
+    command: tsx scripts/agents/studio-audit.ts
+    options:
+      cache: false
+
+  studio:
+    command: bash shared/start-studio.sh --registry studio.projects.json
+    options:
+      cache: false
+      persistent: true
+
   build.deps:
     deps:
       - plugin-clean:build

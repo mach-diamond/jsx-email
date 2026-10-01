@@ -8,6 +8,7 @@ const baseTemplate = {
   fileName: '',
   html: '',
   plain: '',
+  presets: [],
   source: '',
   sourceFile: '',
   sourcePath: '',
@@ -18,8 +19,20 @@ describe('buildFileTree', () => {
   it('groups nested template paths and sorts folders before files', () => {
     const tree = buildFileTree([
       { ...baseTemplate, fileName: 'alpha.tsx', id: 'a', path: 'alpha', templateName: 'alpha' },
-      { ...baseTemplate, fileName: 'zeta.tsx', id: 'b', path: 'zeta/nested', templateName: 'nested' },
-      { ...baseTemplate, fileName: 'deep.tsx', id: 'c', path: 'zeta/deeper/deep', templateName: 'deep' },
+      {
+        ...baseTemplate,
+        fileName: 'zeta.tsx',
+        id: 'b',
+        path: 'zeta/nested',
+        templateName: 'nested'
+      },
+      {
+        ...baseTemplate,
+        fileName: 'deep.tsx',
+        id: 'c',
+        path: 'zeta/deeper/deep',
+        templateName: 'deep'
+      },
       { ...baseTemplate, fileName: 'beta.tsx', id: 'd', path: 'beta/root', templateName: 'root' },
       { ...baseTemplate, fileName: 'early.tsx', id: 'e', path: 'zeta/early', templateName: 'early' }
     ]);

@@ -1,0 +1,6 @@
+{
+  "projects": [
+    "../../Bank-Of-Cardano-Ecosystem/apps/_shared/mail/venture-config/email-studio.config.ts",
+    "../../Online-Jewelry-Store/apps/_shared/mail/venture-config/email-studio.config.ts"
+  ]
+}

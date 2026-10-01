@@ -41,6 +41,8 @@ tasks:
       - dist/packed
 
   typecheck:
+    deps:
+      - jsx-email:build
     command: tsc --project tsconfig.json
     inputs:
       - app

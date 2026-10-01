@@ -73,3 +73,44 @@ We, the maintainers, use JSX email daily.
 ## License
 
 [MIT License](./LICENSE.md)
+
+## Multi-project Email Studio (fork)
+
+Run `just dev` in this checkout to open the unified studio on port 55420.
+The registry in `studio.projects.json` locates project-owned
+`email-studio.config.ts` files; paths are relative to the registry. Add or
+remove entries there to change the shared library. Missing checkouts appear
+as unavailable projects without preventing other projects from opening.
+Project Management uses `scripts/dev-panels.sh` to launch this same studio.
+
+A project launcher passes `--project /path/to/email-studio.config.ts`, which
+loads **only that project**, regardless of the shared registry. The CLI also
+auto-discovers an enclosing project config when run as `email studio` from
+a project directory. Explicit project scope never falls back to all projects.
+
+```sh
+just dev --port 55420 --no-open
+node packages/jsx-email/cli.js studio --project /path/to/email-studio.config.ts
+node packages/jsx-email/cli.js studio --registry /path/to/projects.json
+```
+
+Each project config exports `id`, `name`, `templateDir`, and `brands`. Brands
+have stable `id`, `name`, optional `description`, `color`, and `templates`
+glob patterns. Paths are relative to the config file. Optional `assetDir`
+provides `/static/` assets, namespaced per project. Optional `render` uses
+the project's production renderer; `withBrand(id, render)` wraps the whole
+async render with project-owned context. `previewProps(templatePath, brandId)`
+provides brand-aware sample data; template `previewPresets` remain available.
+Both named `Template` and default component exports are supported.
+
+One Vite server serves the library and previews. Templates render when a
+brand opens, and only templates matching that brand's applicability are
+returned. Project changes invalidate the cache; failed saves preserve the
+last successful preview and expose retry. Build caches are isolated per
+session and removed on shutdown. This local development tool executes trusted
+project configuration and template code; it does not send email.
+
+Project launchers can use `EMAIL_STUDIO_ROOT` to select another checkout.
+Without a shared checkout they bootstrap the fork into their own ignored
+`node_modules/.cache` directory, so a standalone project clone needs no other
+venture repositories. Project dependencies must be installed normally.
