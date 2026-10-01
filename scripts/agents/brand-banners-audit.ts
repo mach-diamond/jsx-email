@@ -5,6 +5,7 @@ import { chromium } from 'playwright';
 const auditBrandBanners = async () => {
   const base = process.env.STUDIO_URL || 'http://localhost:55420';
   const directory = '/tmp/email-studio-banners';
+  const version = process.env.BANNER_VERSION || 'v2';
   await mkdir(directory, { recursive: true });
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
@@ -19,9 +20,10 @@ const auditBrandBanners = async () => {
       const response = await fetch(`${base}/__studio/templates?project=boc&brand=${brand}`);
       assert.equal(response.status, 200);
       const templates = await response.json();
+      assert.ok(templates.length > 0);
       assert.ok(
         templates.every((template: { html: string }) =>
-          template.html.includes(`/__studio/assets/boc/email/${file}-banner-v1.png`)
+          template.html.includes(`/__studio/assets/boc/email/${file}-banner-${version}.png`)
         )
       );
       await page.goto(`${base}/?project=boc&brand=${brand}#/account-access-magiclinksigninemail`);
