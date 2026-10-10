@@ -183,7 +183,13 @@ export const startStudio = async (
       'import.meta.env.VITE_JSXEMAIL_TARGET_PATH': JSON.stringify(temp)
     },
     resolve: { alias: { '@jsxemailbuild': temp } },
-    server: { host: options.host ?? false, port: options.port ?? 55420, strictPort: true }
+    server: {
+      // Reachable by this machine's mDNS name (mac-mini.local:55420) when --host binds the LAN.
+      allowedHosts: ['.local'],
+      host: options.host ?? false,
+      port: options.port ?? 55420,
+      strictPort: true
+    }
   });
   const close = server.close.bind(server);
   server.close = async () => {
