@@ -14,6 +14,7 @@ import { cn } from '../../helpers/cn';
 import { previewPresets } from '../../helpers/presets';
 import { previewTippyProps } from '../../helpers/tippy';
 import { usePreviewStore } from '../../stores/preview-store';
+import type { LabState } from '../../types/lab';
 import type { TemplateData } from '../../types/templates';
 import { Button } from '../ui/button';
 import { SendEmailSection } from './send-email-section';
@@ -23,6 +24,11 @@ import { VariablesPanel } from './variables-panel';
 interface LabControlsPanelProps {
   cardId: string;
   template: TemplateData;
+}
+
+interface ExpandedPanelProps extends LabControlsPanelProps {
+  lab: LabState;
+  updateLab: (cardId: string, patch: Partial<LabState>) => void;
 }
 
 export function LabControlsPanel({ cardId, template }: LabControlsPanelProps) {
@@ -95,109 +101,111 @@ export function LabControlsPanel({ cardId, template }: LabControlsPanelProps) {
         {panelCollapsed ? (
           <CollapsedIcons />
         ) : (
-          <ExpandedPanel cardId={cardId} template={template} />
+          <ExpandedPanel cardId={cardId} lab={lab} template={template} updateLab={updateLab} />
         )}
       </div>
     </aside>
   );
+}
 
-  function ExpandedPanel({ cardId, template }: LabControlsPanelProps) {
-    const presets = template.presets ?? [];
-    const activeData = presets.find((preset) => preset.name === lab.dataPreset) ?? presets[0];
-    return (
-      <div className="min-h-0 w-80 flex-1 overflow-auto">
-        <section className="tool-section">
-          <div className="tool-title">
-            <HalfMoon className="size-[18px]" />
-            Color Mode
-          </div>
-          <SwitchControl
-            checked={lab.colorScheme}
-            label="Dark Mode color scheme"
-            onChange={(value) =>
-              updateLab(cardId, {
-                colorScheme: value,
-                invertColors: value ? false : lab.invertColors
-              })
-            }
-            tooltip="Apple Mail supports dark/light schemes"
-          />
-          <SwitchControl
-            checked={lab.invertColors}
-            label="Gmail Color Inversion"
-            onChange={(value) =>
-              updateLab(cardId, {
-                colorScheme: value ? false : lab.colorScheme,
-                invertColors: value
-              })
-            }
-            tooltip="Gmail inverts colors for dark mode"
-          />
-        </section>
-        <section className="tool-section">
-          <div className="tool-title">
-            <SmartphoneDevice className="size-[18px]" />
-            Aspect Ratios
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {previewPresets.map((preset) => (
-              <button
-                aria-pressed={lab.preset === preset.name}
-                className={cn(
-                  'preset-pill cursor-pointer',
-                  lab.preset === preset.name && 'is-active'
-                )}
-                key={preset.name}
-                onClick={() => updateLab(cardId, { preset: preset.name })}
-                type="button"
-              >
-                <span>{preset.name}</span>
-                <small>{preset.label}</small>
-              </button>
-            ))}
-          </div>
-        </section>
-        <section className="tool-section">
-          <div className="tool-title">
-            <Database className="size-[18px]" />
-            Sample Data
-          </div>
-          {presets.length > 1 ? (
-            <select
-              aria-label="Sample data preset"
-              className="data-preset-select"
-              onChange={(event) => updateLab(cardId, { dataPreset: event.target.value })}
-              value={activeData?.name ?? ''}
+// Module scope on purpose: declared inside LabControlsPanel it was a new component type on every
+// render, so each lab update remounted the panel and the recipient input lost focus per keystroke.
+function ExpandedPanel({ cardId, lab, template, updateLab }: ExpandedPanelProps) {
+  const presets = template.presets ?? [];
+  const activeData = presets.find((preset) => preset.name === lab.dataPreset) ?? presets[0];
+  return (
+    <div className="min-h-0 w-80 flex-1 overflow-auto">
+      <section className="tool-section">
+        <div className="tool-title">
+          <HalfMoon className="size-[18px]" />
+          Color Mode
+        </div>
+        <SwitchControl
+          checked={lab.colorScheme}
+          label="Dark Mode color scheme"
+          onChange={(value) =>
+            updateLab(cardId, {
+              colorScheme: value,
+              invertColors: value ? false : lab.invertColors
+            })
+          }
+          tooltip="Apple Mail supports dark/light schemes"
+        />
+        <SwitchControl
+          checked={lab.invertColors}
+          label="Gmail Color Inversion"
+          onChange={(value) =>
+            updateLab(cardId, {
+              colorScheme: value ? false : lab.colorScheme,
+              invertColors: value
+            })
+          }
+          tooltip="Gmail inverts colors for dark mode"
+        />
+      </section>
+      <section className="tool-section">
+        <div className="tool-title">
+          <SmartphoneDevice className="size-[18px]" />
+          Aspect Ratios
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {previewPresets.map((preset) => (
+            <button
+              aria-pressed={lab.preset === preset.name}
+              className={cn(
+                'preset-pill cursor-pointer',
+                lab.preset === preset.name && 'is-active'
+              )}
+              key={preset.name}
+              onClick={() => updateLab(cardId, { preset: preset.name })}
+              type="button"
             >
-              {presets.map((preset) => (
-                <option key={preset.name} value={preset.name}>
-                  {preset.name}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <p className="tool-note">
-              Add a <code>previewPresets</code> export to compare multiple sample datasets.
-            </p>
-          )}
-        </section>
-        <section className="tool-section">
-          <div className="tool-title">
-            <Code className="size-[18px]" />
-            Variables
-          </div>
-          <VariablesPanel props={activeData?.props ?? {}} />
-        </section>
-        <section className="tool-section">
-          <div className="tool-title">
-            <Send className="size-[18px]" />
-            Send Email
-          </div>
-          <SendEmailSection cardId={cardId} html={activeData?.html ?? template.html} />
-        </section>
-      </div>
-    );
-  }
+              <span>{preset.name}</span>
+              <small>{preset.label}</small>
+            </button>
+          ))}
+        </div>
+      </section>
+      <section className="tool-section">
+        <div className="tool-title">
+          <Database className="size-[18px]" />
+          Sample Data
+        </div>
+        {presets.length > 1 ? (
+          <select
+            aria-label="Sample data preset"
+            className="data-preset-select"
+            onChange={(event) => updateLab(cardId, { dataPreset: event.target.value })}
+            value={activeData?.name ?? ''}
+          >
+            {presets.map((preset) => (
+              <option key={preset.name} value={preset.name}>
+                {preset.name}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <p className="tool-note">
+            Add a <code>previewPresets</code> export to compare multiple sample datasets.
+          </p>
+        )}
+      </section>
+      <section className="tool-section">
+        <div className="tool-title">
+          <Code className="size-[18px]" />
+          Variables
+        </div>
+        <VariablesPanel props={activeData?.props ?? {}} />
+      </section>
+      <section className="tool-section">
+        <div className="tool-title">
+          <Send className="size-[18px]" />
+          Send Email
+        </div>
+        <SendEmailSection cardId={cardId} html={activeData?.html ?? template.html} />
+      </section>
+    </div>
+  );
 }
 
 function CollapsedIcons() {
