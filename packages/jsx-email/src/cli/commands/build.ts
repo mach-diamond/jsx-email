@@ -1,5 +1,5 @@
-import { existsSync } from 'node:fs';
-import { mkdir, realpath, writeFile } from 'node:fs/promises';
+import { existsSync, rmSync } from 'node:fs';
+import { mkdir, mkdtemp, realpath, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 
 import chalkTmpl from 'chalk-template';
@@ -129,11 +129,27 @@ Builds a template and saves the result
 // Credit: https://github.com/rollup/plugins/blob/master/packages/pluginutils/src/normalizePath.ts#L5
 export const normalizePath = (filename: string) => filename.split(win32.sep).join(posix.sep);
 
+let previewTempPath: Promise<string> | undefined;
+
+// `preview` gets one private directory per process. prepareBuild() empties it, so a path shared
+// by every `email preview` run would delete the built templates of a preview that is still serving.
+const getPreviewTempPath = async (tmpdir: string) => {
+  const parent = join(tmpdir, 'jsx-email');
+  await mkdir(parent, { recursive: true });
+  const dir = await mkdtemp(join(parent, 'preview-'));
+  process.once('exit', () => rmSync(dir, { force: true, recursive: true }));
+  return dir;
+};
+
 export const getTempPath = async (type: 'build' | 'preview') => {
   const tmpdir = await realpath(os.tmpdir());
-  const buildPath = join(tmpdir, `jsx-email/${type}`);
 
-  return normalizePath(buildPath);
+  if (type === 'preview') {
+    previewTempPath ??= getPreviewTempPath(tmpdir);
+    return normalizePath(await previewTempPath);
+  }
+
+  return normalizePath(join(tmpdir, `jsx-email/${type}`));
 };
 
 export const build = async (options: BuildOptions): Promise<BuildResult> => {
