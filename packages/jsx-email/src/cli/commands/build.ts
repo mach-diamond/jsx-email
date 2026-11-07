@@ -137,7 +137,16 @@ const getPreviewTempPath = async (tmpdir: string) => {
   const parent = join(tmpdir, 'jsx-email');
   await mkdir(parent, { recursive: true });
   const dir = await mkdtemp(join(parent, 'preview-'));
-  process.once('exit', () => rmSync(dir, { force: true, recursive: true }));
+  const remove = () => rmSync(dir, { force: true, recursive: true });
+  process.once('exit', remove);
+  // A signal's default action skips 'exit'. Listening cancels that default, so clean up and then
+  // die by the same signal, unless another listener (Vite's on SIGTERM) now owns the shutdown.
+  for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+    process.once(signal, () => {
+      remove();
+      if (process.listenerCount(signal) === 0) process.kill(process.pid, signal);
+    });
+  }
   return dir;
 };
 

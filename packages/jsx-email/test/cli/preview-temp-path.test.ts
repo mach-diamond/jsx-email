@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import os from 'node:os';
 import { join } from 'node:path';
 
@@ -20,6 +21,25 @@ describe('getTempPath', () => {
     expect(a).not.toBe(shared);
     expect(b).not.toBe(shared);
     expect(b).not.toBe(a);
+  });
+
+  it.each(['SIGINT', 'SIGTERM'] as const)('removes the preview directory on %s', async (signal) => {
+    vi.resetModules();
+    const { getTempPath } = await import('../../src/cli/commands/build.js');
+    const dir = await getTempPath('preview');
+    expect(existsSync(dir)).toBe(true);
+
+    // The listeners from other module instances stand in for other shutdown owners; drop them so
+    // this one is last and must re-raise.
+    const kill = vi.spyOn(process, 'kill').mockImplementation(() => true);
+    const ours = process.listeners(signal).at(-1)!;
+    process.removeAllListeners(signal);
+    process.once(signal, ours as NodeJS.SignalsListener);
+    process.emit(signal, signal);
+
+    expect(existsSync(dir)).toBe(false);
+    expect(kill).toHaveBeenCalledWith(process.pid, signal);
+    kill.mockRestore();
   });
 
   it('keeps the build directory fixed', async () => {
