@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { chromium, type Page } from 'playwright';
+import { bravePlaywrightOptions } from '/Volumes/hydrogen/Agent-Skills/motion-graphics/scripts/brave.mjs';
 import sharp from 'sharp';
 
 const canvasUrl = process.env.PREVIEW_CANVAS_URL || 'http://localhost:8788';
@@ -11,7 +12,9 @@ const viewport = { height: 900, width: 1280 };
 
 async function main() {
   await mkdir(outDir, { recursive: true });
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch(
+    bravePlaywrightOptions({ headless: true }, import.meta.url)
+  );
   const context = await browser.newContext({ viewport });
 
   const baseline = await context.newPage();
@@ -98,7 +101,9 @@ async function capturePair(name: string, baseline: Page, canvas: Page) {
     diff[index + 3] = 255;
   }
 
-  await sharp(diff, { raw: { channels: 4, height: viewport.height, width: viewport.width } }).png().toFile(diffPath);
+  await sharp(diff, { raw: { channels: 4, height: viewport.height, width: viewport.width } })
+    .png()
+    .toFile(diffPath);
   await sharp({
     create: {
       background: '#ffffff',

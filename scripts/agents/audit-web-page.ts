@@ -1,4 +1,5 @@
 import { chromium, type Page } from 'playwright';
+import { bravePlaywrightOptions } from '/Volumes/hydrogen/Agent-Skills/motion-graphics/scripts/brave.mjs';
 
 const getArg = (name: string, fallback?: string) => {
   const index = process.argv.indexOf(name);
@@ -69,7 +70,9 @@ const collectPageSignals = async (page: Page) => {
 };
 
 const main = async () => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch(
+    bravePlaywrightOptions({ headless: true }, import.meta.url)
+  );
 
   try {
     const context = await browser.newContext({

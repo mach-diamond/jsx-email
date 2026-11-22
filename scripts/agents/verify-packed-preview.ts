@@ -1,10 +1,12 @@
 import { chromium } from 'playwright';
+import { bravePlaywrightOptions } from '/Volumes/hydrogen/Agent-Skills/motion-graphics/scripts/brave.mjs';
 
 const url = process.env.PREVIEW_PACKED_URL || 'http://localhost:8788';
-const executablePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
 async function main() {
-  const browser = await chromium.launch({ executablePath, headless: true });
+  const browser = await chromium.launch(
+    bravePlaywrightOptions({ headless: true }, import.meta.url)
+  );
   const page = await browser.newPage({ viewport: { height: 900, width: 1280 } });
   const errors: string[] = [];
   const failedResponses: string[] = [];

@@ -1,13 +1,16 @@
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 import { chromium } from 'playwright';
+import { bravePlaywrightOptions } from '/Volumes/hydrogen/Agent-Skills/motion-graphics/scripts/brave.mjs';
 
 const auditBrandBanners = async () => {
   const base = process.env.STUDIO_URL || 'http://localhost:55420';
   const directory = '/tmp/email-studio-banners';
   const version = process.env.BANNER_VERSION || 'v2';
   await mkdir(directory, { recursive: true });
-  const browser = await chromium.launch({ channel: 'chrome', headless: true });
+  const browser = await chromium.launch(
+    bravePlaywrightOptions({ headless: true }, import.meta.url)
+  );
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     const errors: string[] = [];

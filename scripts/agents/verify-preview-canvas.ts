@@ -1,10 +1,13 @@
 import { chromium } from 'playwright';
+import { bravePlaywrightOptions } from '/Volumes/hydrogen/Agent-Skills/motion-graphics/scripts/brave.mjs';
 
 const canvasUrl = process.env.PREVIEW_CANVAS_URL || 'http://localhost:8788';
 const baselineUrl = process.env.PREVIEW_BASELINE_URL || 'http://localhost:8787/preview.html';
 
 async function main() {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch(
+    bravePlaywrightOptions({ headless: true }, import.meta.url)
+  );
   const context = await browser.newContext({
     permissions: ['clipboard-read', 'clipboard-write'],
     viewport: { height: 900, width: 1280 }
@@ -22,7 +25,10 @@ async function main() {
     .filter({ hasText: /files$/ })
     .first()
     .textContent();
-  assert(firstFileCount !== '0 files', 'file system panel rendered before templates were available');
+  assert(
+    firstFileCount !== '0 files',
+    'file system panel rendered before templates were available'
+  );
   await page.waitForTimeout(600);
   await page.mouse.move(760, 460);
   await page.screenshot({ fullPage: true, path: '/tmp/preview-canvas-hover.png' });
@@ -30,32 +36,36 @@ async function main() {
   const initial = {
     firstFileCount,
     ...(await page.evaluate(() => {
-    const filePanel = document.getElementById('templates-window')?.getBoundingClientRect();
-    const empty = document.querySelector('main .mt-24')?.getBoundingClientRect();
-    const canvas = document.querySelector('main')?.getBoundingClientRect();
-    const labLeft = canvas ? canvas.right - 12 - 48 : null;
-    const workspaceCenter =
-      filePanel && labLeft ? filePanel.right + (labLeft - filePanel.right) / 2 : null;
-    const emptyCenter = empty ? empty.left + empty.width / 2 : null;
+      const filePanel = document.getElementById('templates-window')?.getBoundingClientRect();
+      const empty = document.querySelector('main .mt-24')?.getBoundingClientRect();
+      const canvas = document.querySelector('main')?.getBoundingClientRect();
+      const labLeft = canvas ? canvas.right - 12 - 48 : null;
+      const workspaceCenter =
+        filePanel && labLeft ? filePanel.right + (labLeft - filePanel.right) / 2 : null;
+      const emptyCenter = empty ? empty.left + empty.width / 2 : null;
 
-    return {
-      appButtonCount: document.querySelectorAll('.app-button').length,
-      cardCodeStylesPresent: Boolean(getComputedStyle(document.documentElement).getPropertyValue('--astro-code-token-keyword')),
-      fileCountLabel: [...document.querySelectorAll('#templates-window span')]
-        .map((node) => node.textContent?.trim())
-        .find((text) => text?.endsWith('files')),
-      emptyDelta: workspaceCenter && emptyCenter ? emptyCenter - workspaceCenter : null,
-      fileCount: document.querySelectorAll('#templates-window .tree-row').length,
-      filePanelWidth: filePanel?.width,
-      gridMask: getComputedStyle(document.querySelector('main')!, '::before').maskImage,
-      hasEmptyCard: Boolean(empty),
-      labPanelCount: document.querySelectorAll('#tool-panel').length,
-      collapsedBranchCount: document.querySelectorAll('#templates-window .tree-children.is-collapsed').length,
-      expandedBranchCount: document.querySelectorAll(
-        '#templates-window .tree-children:not(.is-collapsed)'
-      ).length,
-      treeBranchCount: document.querySelectorAll('#templates-window .tree-branch').length
-    };
+      return {
+        appButtonCount: document.querySelectorAll('.app-button').length,
+        cardCodeStylesPresent: Boolean(
+          getComputedStyle(document.documentElement).getPropertyValue('--astro-code-token-keyword')
+        ),
+        fileCountLabel: [...document.querySelectorAll('#templates-window span')]
+          .map((node) => node.textContent?.trim())
+          .find((text) => text?.endsWith('files')),
+        emptyDelta: workspaceCenter && emptyCenter ? emptyCenter - workspaceCenter : null,
+        fileCount: document.querySelectorAll('#templates-window .tree-row').length,
+        filePanelWidth: filePanel?.width,
+        gridMask: getComputedStyle(document.querySelector('main')!, '::before').maskImage,
+        hasEmptyCard: Boolean(empty),
+        labPanelCount: document.querySelectorAll('#tool-panel').length,
+        collapsedBranchCount: document.querySelectorAll(
+          '#templates-window .tree-children.is-collapsed'
+        ).length,
+        expandedBranchCount: document.querySelectorAll(
+          '#templates-window .tree-children:not(.is-collapsed)'
+        ).length,
+        treeBranchCount: document.querySelectorAll('#templates-window .tree-branch').length
+      };
     }))
   };
 
@@ -65,21 +75,29 @@ async function main() {
   assert(initial.fileCountLabel === '21 files', 'file count label is incorrect');
   assert(initial.fileCount === 25, 'file tree row count is incorrect');
   assert(initial.gridMask.includes('180px'), 'background hover mask is not active');
-  assert(initial.collapsedBranchCount === initial.treeBranchCount, 'folders should be collapsed by default');
+  assert(
+    initial.collapsedBranchCount === initial.treeBranchCount,
+    'folders should be collapsed by default'
+  );
   assert(initial.expandedBranchCount === 0, 'folders should not be expanded by default');
   assert(initial.treeBranchCount > 0, 'tree branch styling is not present');
 
   await page.getByRole('button', { name: 'Collapse file system' }).click();
   await page.waitForTimeout(40);
   const collapsingFileSystem = await page.evaluate(() => ({
-    animating: document.querySelector('#templates-window .panel-collapse-button')?.className.includes('is-animating'),
+    animating: document
+      .querySelector('#templates-window .panel-collapse-button')
+      ?.className.includes('is-animating')
   }));
   assert(collapsingFileSystem.animating, 'file system collapse icon is not animating');
   await page.waitForTimeout(240);
   const collapsedFileSystem = await page.evaluate(() => ({
     height: document.getElementById('templates-window')?.getBoundingClientRect().height
   }));
-  assert(Math.abs(Number(collapsedFileSystem.height) - 48) <= 1, 'file system collapse height is incorrect');
+  assert(
+    Math.abs(Number(collapsedFileSystem.height) - 48) <= 1,
+    'file system collapse height is incorrect'
+  );
   await page.getByRole('button', { name: 'Expand file system' }).click();
   await page.waitForTimeout(260);
 
@@ -96,7 +114,9 @@ async function main() {
   });
   assert(airbnbImages.length >= 2, 'Airbnb preview images are missing');
   assert(
-    airbnbImages.every((image) => image.complete && image.naturalWidth > 0 && image.naturalHeight > 0),
+    airbnbImages.every(
+      (image) => image.complete && image.naturalWidth > 0 && image.naturalHeight > 0
+    ),
     'Airbnb preview images did not load'
   );
 
@@ -113,8 +133,11 @@ async function main() {
 
     return {
       cardTabs: Boolean(document.querySelector('main .card-tabs')),
-      closeButtonLabel: document.querySelector('main .ring-2 button[aria-label^="Close"]')?.getAttribute('aria-label'),
-      headerBorder: getComputedStyle(document.querySelector('main .ring-2 article > div')!).borderBottomWidth,
+      closeButtonLabel: document
+        .querySelector('main .ring-2 button[aria-label^="Close"]')
+        ?.getAttribute('aria-label'),
+      headerBorder: getComputedStyle(document.querySelector('main .ring-2 article > div')!)
+        .borderBottomWidth,
       labPanelWidth: document.getElementById('tool-panel')?.getBoundingClientRect().width,
       selectedDelta: workspaceCenter && selectedCenter ? selectedCenter - workspaceCenter : null,
       selectedTitle: document.querySelector('main .ring-2 h2')?.textContent
@@ -123,7 +146,10 @@ async function main() {
 
   assert(Math.abs(Number(afterAdd.selectedDelta)) <= 1, 'selected card is not centered');
   assert(afterAdd.cardTabs, 'card tabs styling is missing');
-  assert(afterAdd.closeButtonLabel === 'Close Apple Receipt', 'card close button label is incorrect');
+  assert(
+    afterAdd.closeButtonLabel === 'Close Apple Receipt',
+    'card close button label is incorrect'
+  );
   assert(afterAdd.headerBorder !== '0px', 'card titlebar border is missing');
   assert(afterAdd.labPanelWidth === 48, 'lab panel should be collapsed after first card add');
 
@@ -147,9 +173,15 @@ async function main() {
     };
   });
   assert(expandedLab.panelWidth === 320, 'expanded lab panel width is incorrect');
-  assert(expandedLab.collapsedIconCount === 0, 'collapsed lab icons should be hidden when expanded');
+  assert(
+    expandedLab.collapsedIconCount === 0,
+    'collapsed lab icons should be hidden when expanded'
+  );
   assert(expandedLab.presetScrolls, 'preset pills should remain one horizontal scroll row');
-  assert(expandedLab.sectionWidths.every((width) => Math.abs(width - 320) <= 1), 'lab sections should have fixed width');
+  assert(
+    expandedLab.sectionWidths.every((width) => Math.abs(width - 320) <= 1),
+    'lab sections should have fixed width'
+  );
   assert(
     expandedLab.titles.join('|') === 'Color Mode|Presets|Send Email',
     'lab section titles are incorrect'
@@ -217,7 +249,7 @@ async function readLocalPoint(page: import('playwright').Page, x: number, y: num
       const content = canvas.firstElementChild;
       if (!content) return null;
       const contentRect = content.getBoundingClientRect();
-      const transform = getComputedStyle(content).transform;
+      const { transform } = getComputedStyle(content);
       const scale = transform === 'none' ? 1 : new DOMMatrixReadOnly(transform).a;
 
       return {

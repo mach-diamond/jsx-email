@@ -3,6 +3,7 @@ import { createServer } from 'node:http';
 import { extname, join, normalize } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium, type Page } from 'playwright';
+import { bravePlaywrightOptions } from '/Volumes/hydrogen/Agent-Skills/motion-graphics/scripts/brave.mjs';
 
 const repoRoot = process.cwd();
 
@@ -130,7 +131,9 @@ const main = async () => {
   const localServer = baseUrl ? null : await startServer();
   const pageUrl = baseUrl || localServer!.url;
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch(
+    bravePlaywrightOptions({ headless: true }, import.meta.url)
+  );
 
   try {
     const context = await browser.newContext({

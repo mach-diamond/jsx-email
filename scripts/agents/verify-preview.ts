@@ -1,4 +1,5 @@
 import { chromium } from 'playwright';
+import { bravePlaywrightOptions } from '/Volumes/hydrogen/Agent-Skills/motion-graphics/scripts/brave.mjs';
 
 const defaultUrl = 'http://localhost:8787/preview.html';
 
@@ -10,7 +11,9 @@ function getArg(name: string, fallback: string) {
 async function main() {
   const url = getArg('--url', defaultUrl);
   const check = getArg('--check', 'all');
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch(
+    bravePlaywrightOptions({ headless: true }, import.meta.url)
+  );
   const context = await browser.newContext({
     permissions: ['clipboard-read', 'clipboard-write'],
     viewport: { width: 1280, height: 900 }
@@ -64,7 +67,7 @@ async function main() {
 
       const canvasRect = canvas.getBoundingClientRect();
       const contentRect = content.getBoundingClientRect();
-      const transform = getComputedStyle(content).transform;
+      const { transform } = getComputedStyle(content);
       const scale = transform === 'none' ? 1 : new DOMMatrixReadOnly(transform).a;
       const anchorX = canvasRect.left + canvasRect.width / 2;
       const anchorY = canvasRect.top + canvasRect.height / 2;
@@ -87,7 +90,7 @@ async function main() {
         if (!content) return null;
 
         const contentRect = content.getBoundingClientRect();
-        const transform = getComputedStyle(content).transform;
+        const { transform } = getComputedStyle(content);
         const scale = transform === 'none' ? 1 : new DOMMatrixReadOnly(transform).a;
 
         return {
@@ -250,7 +253,9 @@ async function main() {
       invertPressed: await page
         .getByRole('button', { exact: true, name: 'Gmail Color Inversion' })
         .getAttribute('aria-pressed'),
-      shellClass: await page.locator('main .ring-2 iframe').evaluate((frame) => frame.parentElement?.className)
+      shellClass: await page
+        .locator('main .ring-2 iframe')
+        .evaluate((frame) => frame.parentElement?.className)
     };
     await page.getByRole('button', { exact: true, name: 'Gmail Color Inversion' }).click();
     await page.waitForTimeout(800);
@@ -259,7 +264,9 @@ async function main() {
       darkPressed: document
         .querySelector('[aria-label="Dark Mode color scheme"]')
         ?.getAttribute('aria-pressed'),
-      invertPressed: document.querySelector('[aria-label="Gmail Color Inversion"]')?.getAttribute('aria-pressed'),
+      invertPressed: document
+        .querySelector('[aria-label="Gmail Color Inversion"]')
+        ?.getAttribute('aria-pressed'),
       shellClass: frame.parentElement?.className
     }));
     const inversionScroll = await page.locator('main .ring-2 iframe').evaluate((frame) => {
@@ -279,7 +286,9 @@ async function main() {
       darkPressed: document
         .querySelector('[aria-label="Dark Mode color scheme"]')
         ?.getAttribute('aria-pressed'),
-      invertPressed: document.querySelector('[aria-label="Gmail Color Inversion"]')?.getAttribute('aria-pressed'),
+      invertPressed: document
+        .querySelector('[aria-label="Gmail Color Inversion"]')
+        ?.getAttribute('aria-pressed'),
       shellClass: frame.parentElement?.className
     }));
     await page.getByText('Dark Mode color scheme', { exact: true }).click();
@@ -333,9 +342,11 @@ async function main() {
     });
     await page.getByText('Gmail Color Inversion', { exact: true }).hover();
     await page.waitForTimeout(350);
-    const tooltipVisible = await page.locator('.tippy-box').evaluateAll((boxes) =>
-      boxes.some((box) => box.textContent?.includes('Gmail inverts colors for dark mode'))
-    );
+    const tooltipVisible = await page
+      .locator('.tippy-box')
+      .evaluateAll((boxes) =>
+        boxes.some((box) => box.textContent?.includes('Gmail inverts colors for dark mode'))
+      );
     await page.getByRole('button', { exact: true, name: 'Collapse tool panel' }).click();
     await page.waitForTimeout(250);
     const panelAfter = await page
@@ -350,7 +361,9 @@ async function main() {
       };
     });
     const collapsedIconCount = await page
-      .locator('#tool-panel [aria-label="Color mode"], #tool-panel [aria-label="Presets"], #tool-panel [aria-label="Send email"]')
+      .locator(
+        '#tool-panel [aria-label="Color mode"], #tool-panel [aria-label="Presets"], #tool-panel [aria-label="Send email"]'
+      )
       .count();
     const collapsedIconGeometry = await page.evaluate(() => {
       const panel = document.getElementById('tool-panel')?.getBoundingClientRect();
@@ -490,7 +503,9 @@ async function main() {
     const plunkRequest = plunkRequests.at(-1);
     const sendRequest = {
       authIsBearer: plunkRequest?.authorization?.startsWith('Bearer sk_') || false,
-      bodyHasHtml: typeof plunkRequest?.body?.body === 'string' && plunkRequest.body.body.includes('<!DOCTYPE html'),
+      bodyHasHtml:
+        typeof plunkRequest?.body?.body === 'string' &&
+        plunkRequest.body.body.includes('<!DOCTYPE html'),
       contentType: plunkRequest?.contentType,
       subject: plunkRequest?.body?.subject,
       to: plunkRequest?.body?.to
@@ -668,7 +683,10 @@ async function main() {
     });
     await addTemplate('airbnb-review.tsx');
     await addTemplate('apple-receipt.tsx');
-    await page.locator('main .inline-block').first().click({ position: { x: 20, y: 20 } });
+    await page
+      .locator('main .inline-block')
+      .first()
+      .click({ position: { x: 20, y: 20 } });
     await page.waitForTimeout(900);
     const codeText = await (async () => {
       await page.getByRole('tab', { exact: true, name: 'JSX' }).first().click();
@@ -702,7 +720,9 @@ async function main() {
       cursor: await page
         .locator('main .ring-2')
         .evaluate((element) => getComputedStyle(element).cursor),
-      codeHighlight: await page.locator('main .ring-2 .card-code span[style*="--astro-code"]').count(),
+      codeHighlight: await page
+        .locator('main .ring-2 .card-code span[style*="--astro-code"]')
+        .count(),
       codeColor: await page
         .locator('main .ring-2 .card-code')
         .evaluate((element) => getComputedStyle(element).color),
@@ -752,7 +772,10 @@ async function main() {
     await openPreview('tree');
     await addTemplate('airbnb-review.tsx');
     await addTemplate('apple-receipt.tsx');
-    await page.locator('main .inline-block').first().click({ position: { x: 20, y: 20 } });
+    await page
+      .locator('main .inline-block')
+      .first()
+      .click({ position: { x: 20, y: 20 } });
     await page.waitForTimeout(200);
 
     const selectedTree = await page.evaluate(() =>
@@ -877,10 +900,14 @@ async function main() {
     const cardMousePointAfterZoom = await readLocalPointAt(760, 320);
     const zoomAfterCardSurface = await readZoom();
     const selectedAfterCardSurface = await readSelected();
-    const headerDarkBefore = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+    const headerDarkBefore = await page.evaluate(() =>
+      document.documentElement.classList.contains('dark')
+    );
     await page.getByRole('button', { exact: true, name: 'Toggle dark mode' }).click();
     await page.waitForTimeout(100);
-    const headerDarkAfter = await page.evaluate(() => document.documentElement.classList.contains('dark'));
+    const headerDarkAfter = await page.evaluate(() =>
+      document.documentElement.classList.contains('dark')
+    );
     const zoomAfterHeaderSurface = await readZoom();
     await page.getByRole('button', { exact: true, name: 'apple-receipt.tsx' }).click();
     await page.waitForTimeout(200);

@@ -1,4 +1,5 @@
 import { chromium } from 'playwright';
+import { bravePlaywrightOptions } from '/Volumes/hydrogen/Agent-Skills/motion-graphics/scripts/brave.mjs';
 
 const defaultUrl = 'http://localhost:8789';
 const defaultPath = '/tmp/preview-line-numbers.png';
@@ -11,7 +12,9 @@ function getArg(name: string, fallback: string) {
 async function main() {
   const url = getArg('--url', defaultUrl);
   const path = getArg('--path', defaultPath);
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch(
+    bravePlaywrightOptions({ headless: true }, import.meta.url)
+  );
   const page = await browser.newPage({
     deviceScaleFactor: 2,
     viewport: { height: 900, width: 1280 }

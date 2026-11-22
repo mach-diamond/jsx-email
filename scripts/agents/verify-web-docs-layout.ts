@@ -1,5 +1,6 @@
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
+import { bravePlaywrightOptions } from '/Volumes/hydrogen/Agent-Skills/motion-graphics/scripts/brave.mjs';
 
 const repoRoot = process.cwd();
 
@@ -23,7 +24,9 @@ const assert = (condition: boolean, message: string): asserts condition => {
 };
 
 const main = async () => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch(
+    bravePlaywrightOptions({ headless: true }, import.meta.url)
+  );
 
   try {
     const context = await browser.newContext({

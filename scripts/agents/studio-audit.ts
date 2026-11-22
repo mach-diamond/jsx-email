@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 
 import { chromium } from 'playwright';
+import { bravePlaywrightOptions } from '/Volumes/hydrogen/Agent-Skills/motion-graphics/scripts/brave.mjs';
 
 const main = async () => {
   const base = process.env.STUDIO_URL || 'http://localhost:55430';
@@ -19,7 +20,9 @@ const main = async () => {
     catalog.every((p: { error?: string }) => !p.error),
     JSON.stringify(catalog)
   );
-  const browser = await chromium.launch({ headless: true, channel: 'chrome' });
+  const browser = await chromium.launch(
+    bravePlaywrightOptions({ headless: true }, import.meta.url)
+  );
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
     const errors: string[] = [];
